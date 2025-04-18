@@ -39,13 +39,7 @@ class QuizController < ApplicationController
   end
 
   def result
-    @user_email = session[:user_email]
-    @movie_type = UserResponse.calculate_type(@user_email)
-    
-    # Get AI-generated content
-    openai = OpenaiService.new
-    @personality_description = openai.generate_personality_description(@movie_type)
-    @recommendations = openai.generate_recommendations(@movie_type, UserResponse.where(user_email: @user_email))
+    @presenter = ResultPresenter.new(session[:user_email])
     
     # Clear session after getting results
     session[:responses] = nil

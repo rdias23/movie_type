@@ -3,16 +3,36 @@
     <!-- Movie Type Header -->
     <div class="text-center mb-16">
       <h1 class="text-6xl md:text-8xl font-bold mb-6 font-mono tracking-wider">
-        <%= @movie_type %>
+        <%= @presenter.movie_type %>
       </h1>
       <p class="text-xl text-gray-400">Your Cinematic Personality Type</p>
+    </div>
+
+    <!-- Dimension Breakdown -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+      <% @presenter.dimension_breakdowns.each do |dimension| %>
+        <div class="bg-white/5 rounded-lg p-6">
+          <h3 class="text-lg font-semibold mb-2"><%= dimension[:name] %></h3>
+          <div class="flex justify-between text-sm text-gray-400 mb-2">
+            <span><%= dimension[:low_label] %></span>
+            <span><%= dimension[:high_label] %></span>
+          </div>
+          <div class="h-2 bg-white/10 rounded-full mb-2">
+            <div class="h-full bg-white rounded-full transition-all duration-500"
+                 style="width: <%= ((dimension[:score] / 5.0) * 100).round %>%"></div>
+          </div>
+          <p class="text-sm text-gray-400 text-center">
+            <%= dimension[:letter] %>
+          </p>
+        </div>
+      <% end %>
     </div>
 
     <!-- AI-Generated Description -->
     <div class="bg-white/10 rounded-lg p-8 mb-12">
       <h2 class="text-2xl font-semibold mb-4">Your Cinematic Soul</h2>
       <div class="prose prose-invert">
-        <%= simple_format @personality_description %>
+        <%= simple_format @presenter.personality_description %>
       </div>
     </div>
 
@@ -20,7 +40,7 @@
     <div class="bg-white/10 rounded-lg p-8">
       <h2 class="text-2xl font-semibold mb-4">Curated for Your Type</h2>
       <div class="prose prose-invert">
-        <%= simple_format @recommendations %>
+        <%= simple_format @presenter.recommendations %>
       </div>
     </div>
 
@@ -28,11 +48,11 @@
     <div class="mt-12 text-center">
       <h3 class="text-xl mb-4">Share Your Type</h3>
       <div class="flex justify-center space-x-4">
-        <button onclick="copyToClipboard('<%= @movie_type %>')" 
+        <button onclick="copyToClipboard('<%= @presenter.movie_type %>')" 
                 class="bg-white/10 hover:bg-white/20 transition-colors rounded-lg px-6 py-3">
           Copy Type
         </button>
-        <a href="https://twitter.com/intent/tweet?text=I'm%20a%20<%= @movie_type %>%20movie%20personality%20type!%20Discover%20yours%20at%20MovieType"
+        <a href="https://twitter.com/intent/tweet?text=I'm%20a%20<%= @presenter.movie_type %>%20movie%20personality%20type!%20Discover%20yours%20at%20MovieType"
            target="_blank"
            class="bg-white/10 hover:bg-white/20 transition-colors rounded-lg px-6 py-3">
           Tweet Result
