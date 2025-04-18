@@ -11,6 +11,11 @@
 /.env*
 !/.env*.erb
 
+# Environment files
+.env
+.env.*
+!.env.example
+
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
@@ -29,10 +34,11 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
-/public/assets
+# Additional ignores for Rails
+config/master.key
+config/credentials/*.key
 
-# Ignore master key for decrypting credentials and more.
-/config/master.key
+/public/assets
 
 /app/assets/builds/*
 !/app/assets/builds/.keep

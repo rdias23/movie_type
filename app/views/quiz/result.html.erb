@@ -1,0 +1,59 @@
+<div class="min-h-screen bg-black text-white">
+  <div class="max-w-4xl mx-auto px-4 py-16">
+    <!-- Movie Type Header -->
+    <div class="text-center mb-16">
+      <h1 class="text-6xl md:text-8xl font-bold mb-6 font-mono tracking-wider">
+        <%= @movie_type %>
+      </h1>
+      <p class="text-xl text-gray-400">Your Cinematic Personality Type</p>
+    </div>
+
+    <!-- AI-Generated Description -->
+    <div class="bg-white/10 rounded-lg p-8 mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Your Cinematic Soul</h2>
+      <div class="prose prose-invert">
+        <%= simple_format @personality_description %>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="bg-white/10 rounded-lg p-8">
+      <h2 class="text-2xl font-semibold mb-4">Curated for Your Type</h2>
+      <div class="prose prose-invert">
+        <%= simple_format @recommendations %>
+      </div>
+    </div>
+
+    <!-- Share Section -->
+    <div class="mt-12 text-center">
+      <h3 class="text-xl mb-4">Share Your Type</h3>
+      <div class="flex justify-center space-x-4">
+        <button onclick="copyToClipboard('<%= @movie_type %>')" 
+                class="bg-white/10 hover:bg-white/20 transition-colors rounded-lg px-6 py-3">
+          Copy Type
+        </button>
+        <a href="https://twitter.com/intent/tweet?text=I'm%20a%20<%= @movie_type %>%20movie%20personality%20type!%20Discover%20yours%20at%20MovieType"
+           target="_blank"
+           class="bg-white/10 hover:bg-white/20 transition-colors rounded-lg px-6 py-3">
+          Tweet Result
+        </a>
+      </div>
+    </div>
+
+    <!-- Start Over -->
+    <div class="mt-12 text-center">
+      <%= link_to "Take the Quiz Again", root_path, 
+          class: "text-gray-400 hover:text-white transition-colors" %>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    alert('Copied to clipboard!');
+  }).catch(function(err) {
+    console.error('Failed to copy text: ', err);
+  });
+}
+</script>

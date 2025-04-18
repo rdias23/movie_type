@@ -10,5 +10,11 @@ Rails.application.routes.draw do
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
   # Defines the root path route ("/")
-  # root "posts#index"
+  root "quiz#start"
+  
+  # Quiz routes
+  get 'quiz/start', to: 'quiz#start', as: :quiz_start
+  get 'quiz/question/:id', to: 'quiz#question', as: :quiz_question
+  post 'quiz/answer', to: 'quiz#answer', as: :quiz_answer
+  get 'quiz/result', to: 'quiz#result', as: :quiz_result
 end

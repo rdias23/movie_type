@@ -1,0 +1,55 @@
+<div class="min-h-screen bg-black text-white">
+  <div class="max-w-4xl mx-auto px-4 py-16">
+    <h1 class="text-4xl md:text-6xl font-bold mb-8 text-center">
+      Discover Your Movie Personality
+    </h1>
+    
+    <p class="text-xl md:text-2xl text-gray-300 mb-12 text-center">
+      What kind of cinephile are you? Take this quiz to uncover your unique film-watching personality 
+      and get personalized movie recommendations.
+    </p>
+
+    <div class="bg-white/10 rounded-lg p-8 mb-12">
+      <h2 class="text-2xl font-semibold mb-4">What You'll Discover:</h2>
+      <ul class="space-y-4 text-lg text-gray-300">
+        <li class="flex items-start">
+          <span class="text-2xl mr-3">🎭</span>
+          <span>Your 4-letter movie personality type</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-2xl mr-3">✨</span>
+          <span>A poetic description of your cinematic tastes</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-2xl mr-3">🎬</span>
+          <span>Curated film and director recommendations</span>
+        </li>
+        <li class="flex items-start">
+          <span class="text-2xl mr-3">🧠</span>
+          <span>Insights into how you experience cinema</span>
+        </li>
+      </ul>
+    </div>
+
+    <%= form_tag quiz_question_path(QuizQuestion.first), method: :get, class: "max-w-md mx-auto" do %>
+      <div class="mb-6">
+        <label class="block text-gray-300 mb-2" for="email">
+          Enter your email to begin:
+        </label>
+        <%= email_field_tag :email, nil, 
+            class: "w-full px-4 py-3 rounded bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/50",
+            placeholder: "your@email.com",
+            required: true %>
+      </div>
+
+      <button type="submit" 
+              class="w-full bg-white text-black py-4 px-8 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors">
+        Begin the Journey
+      </button>
+    <% end %>
+
+    <p class="mt-8 text-sm text-gray-400 text-center">
+      Takes about 5 minutes • No sign up required • Results sent instantly
+    </p>
+  </div>
+</div>
