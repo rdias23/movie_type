@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .prose {
+    @apply text-gray-300 leading-relaxed;
+  }
+  
+  .prose p {
+    @apply mb-4;
+  }
+}

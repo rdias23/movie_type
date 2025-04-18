@@ -37,7 +37,7 @@ gem "bootsnap", require: false
 # gem "image_processing", "~> 1.2"
 
 # OpenAI integration
-gem 'ruby-openai'
+gem 'ruby-openai', '~> 4.0.0'
 
 # Environment variables
 gem 'dotenv-rails'

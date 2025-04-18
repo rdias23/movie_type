@@ -109,7 +109,6 @@ GEM
     drb (2.2.1)
     error_highlight (0.7.0)
     erubi (1.13.1)
-    event_stream_parser (1.0.0)
     faraday (2.13.0)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -255,8 +254,7 @@ GEM
       rubocop (>= 1.72)
       rubocop-performance (>= 1.24)
       rubocop-rails (>= 2.30)
-    ruby-openai (8.1.0)
-      event_stream_parser (>= 0.3.0, < 2.0.0)
+    ruby-openai (4.0.0)
       faraday (>= 1)
       faraday-multipart (>= 1)
     ruby-progressbar (1.13.0)
@@ -323,7 +321,7 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 7.2.2, >= 7.2.2.1)
   rubocop-rails-omakase
-  ruby-openai
+  ruby-openai (~> 4.0.0)
   selenium-webdriver
   sprockets-rails
   stimulus-rails

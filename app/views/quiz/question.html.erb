@@ -6,7 +6,7 @@
         <div class="h-full bg-white rounded-full transition-all duration-500" style="width: <%= @progress %>%"></div>
       </div>
       <p class="text-gray-400 mt-2 text-sm text-right">
-        Question <%= params[:id] %> of <%= @total_questions %>
+        Question <%= @current_question_number %> of <%= @total_questions %>
       </p>
     </div>
 
@@ -15,38 +15,41 @@
       <h2 class="text-2xl md:text-3xl font-bold mb-8 text-center">
         <%= @current_question.prompt %>
       </h2>
+
+      <div class="grid grid-cols-2 gap-8 text-center text-xl text-gray-300 mb-8">
+        <div><%= @current_question.low_text %></div>
+        <div><%= @current_question.high_text %></div>
+      </div>
     </div>
 
     <!-- Answer options -->
     <div class="space-y-4 max-w-2xl mx-auto">
-      <% (1..5).each do |value| %>
-        <%= form_tag quiz_answer_path, method: :post, class: "w-full" do %>
-          <%= hidden_field_tag :question_id, @current_question.id %>
-          <%= hidden_field_tag :value, value %>
-          
-          <button type="submit" 
-                  class="w-full text-left p-6 rounded-lg border border-white/20 hover:bg-white/10 transition-colors">
-            <div class="flex items-center justify-between">
-              <span class="text-lg">
+      <%= form_with url: quiz_answer_path, local: true do |f| %>
+        <%= f.hidden_field :question_id, value: @current_question.id %>
+        
+        <div class="space-y-4">
+          <% (1..5).each do |value| %>
+            <button type="submit" 
+                    name="value"
+                    value="<%= value %>"
+                    class="w-full p-4 rounded-lg border border-white/20 hover:bg-white/10 transition-colors text-center">
+              <div class="text-lg">
                 <% case value %>
                 <% when 1 %>
-                  Strongly prefer: <%= @current_question.low_text %>
+                  Strongly prefer the first option
                 <% when 2 %>
-                  Somewhat prefer: <%= @current_question.low_text %>
+                  Somewhat prefer the first option
                 <% when 3 %>
-                  Neutral / Both equally
+                  I like both equally
                 <% when 4 %>
-                  Somewhat prefer: <%= @current_question.high_text %>
+                  Somewhat prefer the second option
                 <% when 5 %>
-                  Strongly prefer: <%= @current_question.high_text %>
+                  Strongly prefer the second option
                 <% end %>
-              </span>
-              <span class="text-2xl opacity-50">
-                <%= ["⬅️", "↙️", "↔️", "↗️", "➡️"][value-1] %>
-              </span>
-            </div>
-          </button>
-        <% end %>
+              </div>
+            </button>
+          <% end %>
+        </div>
       <% end %>
     </div>
   </div>

@@ -5,7 +5,8 @@
       <h1 class="text-6xl md:text-8xl font-bold mb-6 font-mono tracking-wider">
         <%= @presenter.movie_type %>
       </h1>
-      <p class="text-xl text-gray-400">Your Cinematic Personality Type</p>
+      <h2 class="text-2xl text-gray-400 mb-2"><%= @presenter.archetype_title %></h2>
+      <p class="text-xl text-gray-500">Your Cinematic Personality Type</p>
     </div>
 
     <!-- Dimension Breakdown -->
@@ -17,9 +18,17 @@
             <span><%= dimension[:low_label] %></span>
             <span><%= dimension[:high_label] %></span>
           </div>
-          <div class="h-2 bg-white/10 rounded-full mb-2">
-            <div class="h-full bg-white rounded-full transition-all duration-500"
-                 style="width: <%= ((dimension[:score] / 5.0) * 100).round %>%"></div>
+          <div class="relative h-2 bg-white/10 rounded-full mb-2">
+            <!-- Center line -->
+            <div class="absolute top-0 left-1/2 w-px h-full bg-white/20"></div>
+            <!-- Score indicator -->
+            <div class="absolute top-0 h-full bg-white rounded-full transition-all duration-500"
+                 style="width: <%= ((dimension[:score] / 5.0) * 100).round %>%; left: 0"></div>
+          </div>
+          <div class="flex justify-between text-xs text-gray-500 mb-2">
+            <span>1</span>
+            <span>3</span>
+            <span>5</span>
           </div>
           <p class="text-sm text-gray-400 text-center">
             <%= dimension[:letter] %>
@@ -31,7 +40,7 @@
     <!-- AI-Generated Description -->
     <div class="bg-white/10 rounded-lg p-8 mb-12">
       <h2 class="text-2xl font-semibold mb-4">Your Cinematic Soul</h2>
-      <div class="prose prose-invert">
+      <div class="prose prose-invert max-w-none">
         <%= simple_format @presenter.personality_description %>
       </div>
     </div>
@@ -39,30 +48,56 @@
     <!-- Recommendations -->
     <div class="bg-white/10 rounded-lg p-8">
       <h2 class="text-2xl font-semibold mb-4">Curated for Your Type</h2>
-      <div class="prose prose-invert">
-        <%= simple_format @presenter.recommendations %>
-      </div>
+      
+      <% if @presenter.recommendations.is_a?(Hash) %>
+        <!-- Films -->
+        <div class="mb-8">
+          <h3 class="text-xl font-semibold mb-4">Essential Films</h3>
+          <ul class="list-disc list-inside space-y-2 text-gray-300">
+            <% @presenter.recommendations[:films].each do |film| %>
+              <li><%= film %></li>
+            <% end %>
+          </ul>
+        </div>
+
+        <!-- Directors -->
+        <div>
+          <h3 class="text-xl font-semibold mb-4">Directors to Explore</h3>
+          <ul class="list-disc list-inside space-y-2 text-gray-300">
+            <% @presenter.recommendations[:directors].each do |director| %>
+              <li><%= director %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% else %>
+        <div class="prose prose-invert">
+          <%= simple_format @presenter.recommendations %>
+        </div>
+      <% end %>
     </div>
 
     <!-- Share Section -->
     <div class="mt-12 text-center">
       <h3 class="text-xl mb-4">Share Your Type</h3>
       <div class="flex justify-center space-x-4">
-        <button onclick="copyToClipboard('<%= @presenter.movie_type %>')" 
-                class="bg-white/10 hover:bg-white/20 transition-colors rounded-lg px-6 py-3">
+        <button onclick="copyToClipboard('<%= @presenter.movie_type %> - <%= @presenter.archetype_title %>')" 
+                class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+          <i class="fas fa-copy mr-2"></i>
           Copy Type
         </button>
-        <a href="https://twitter.com/intent/tweet?text=I'm%20a%20<%= @presenter.movie_type %>%20movie%20personality%20type!%20Discover%20yours%20at%20MovieType"
+        
+        <a href="https://twitter.com/intent/tweet?text=I am <%= @presenter.archetype_title %> (<%= @presenter.movie_type %>)! Discover your cinematic personality at MovieType.com"
            target="_blank"
-           class="bg-white/10 hover:bg-white/20 transition-colors rounded-lg px-6 py-3">
-          Tweet Result
+           class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors">
+          <i class="fab fa-twitter mr-2"></i>
+          Share on Twitter
         </a>
       </div>
     </div>
 
     <!-- Start Over -->
     <div class="mt-12 text-center">
-      <%= link_to "Take the Quiz Again", root_path, 
+      <%= link_to "Take the Quiz Again", root_path(clear_responses: true), 
           class: "text-gray-400 hover:text-white transition-colors" %>
     </div>
   </div>
@@ -70,10 +105,8 @@
 
 <script>
 function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(function() {
+  navigator.clipboard.writeText(text).then(() => {
     alert('Copied to clipboard!');
-  }).catch(function(err) {
-    console.error('Failed to copy text: ', err);
   });
 }
 </script>
