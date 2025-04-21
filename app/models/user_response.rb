@@ -25,4 +25,17 @@ class UserResponse < ApplicationRecord
       result.letter_for_score(result.avg_score)
     end.join
   end
+
+  # Safe method to view user email for debugging
+  def self.debug_responses_for_email(email)
+    Rails.logger.info "DEBUGGING: Viewing responses for #{email}"
+    where(user_email: email).includes(:quiz_question).map do |response|
+      {
+        email: response.user_email,
+        question_id: response.quiz_question_id,
+        value: response.response_value,
+        created_at: response.created_at
+      }
+    end
+  end
 end

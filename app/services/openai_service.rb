@@ -20,6 +20,8 @@ class OpenaiService
       3. E/I (External vs Internal) - Their viewing perspective
       4. X/M (eXplicit vs aMbiguous) - Their interpretive approach
 
+      So, a complete type might be something like PGEX AGIM
+
       Write a 2-3 paragraph response that:
       - Captures the essence of their cinematic personality
       - Uses elegant, poetic language
@@ -30,7 +32,7 @@ class OpenaiService
     begin
       response = @client.chat(
         parameters: {
-          model: ENV.fetch("OPENAI_MODEL", "gpt-3.5-turbo"),
+          model: ENV.fetch("OPENAI_MODEL", "gpt-4"),
           messages: [
             { role: 'system', content: system_prompt },
             { role: 'user', content: "Generate a personality description for movie type: #{movie_type}" }
@@ -52,7 +54,7 @@ class OpenaiService
     
     # Calculate average scores for context
     dimension_scores = responses.group_by { |r| r.quiz_question.personality_dimension }
-                               .transform_values { |rs| rs.average(:response_value).to_f }
+                               .transform_values { |rs| rs.sum(&:response_value) / rs.size.to_f }
     
     puts "Dimension scores: #{dimension_scores.inspect}"
 
@@ -80,7 +82,7 @@ class OpenaiService
       puts "\nCalling OpenAI API..."
       response = @client.chat(
         parameters: {
-          model: 'gpt-4',
+          model: ENV.fetch("OPENAI_MODEL", "gpt-4"),
           messages: [
             { role: 'system', content: system_prompt },
             { role: 'user', content: "Generate recommendations for type: #{movie_type}" }
@@ -123,6 +125,45 @@ class OpenaiService
     rescue StandardError => e
       puts "\nOpenAI error: #{e.message}\n#{e.backtrace.join("\n")}"
       generate_fallback_recommendations
+    end
+  end
+
+  def all_personality_types(force_refresh: false)
+    self.class.all_personality_types(force_refresh: force_refresh)
+  end
+
+  def self.all_personality_types(force_refresh: false)
+    cache_key = "openai_service/personality_types"
+    
+    if force_refresh
+      Rails.cache.delete(cache_key)
+    end
+
+    Rails.cache.fetch(cache_key, expires_in: 1.day) do
+      dimensions = {
+        narrative: ['P', 'A'],  # Plot vs Atmosphere
+        tone: ['W', 'G'],      # Whimsy vs Gravitas
+        perspective: ['E', 'I'], # External vs Internal
+        interpretation: ['X', 'M']  # eXplicit vs aMbiguous
+      }
+      
+      types = dimensions[:narrative].product(
+        dimensions[:tone],
+        dimensions[:perspective],
+        dimensions[:interpretation]
+      ).map { |combo| combo.join }
+
+      types.each_with_object({}) do |type, hash|
+        hash[type] = {
+          dimensions: {
+            narrative: type[0] == 'P' ? 'Plot-focused' : 'Atmosphere-focused',
+            tone: type[1] == 'W' ? 'Whimsical' : 'Grave',
+            perspective: type[2] == 'E' ? 'External' : 'Internal',
+            interpretation: type[3] == 'X' ? 'Explicit' : 'Ambiguous'
+          },
+          description: OpenaiService.new.generate_personality_description(type)
+        }
+      end
     end
   end
 
