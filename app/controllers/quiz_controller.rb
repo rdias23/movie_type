@@ -1,11 +1,7 @@
 class QuizController < ApplicationController
   def start
-    # Clear old responses when starting a new quiz
-    if params[:clear_responses]
-      UserResponse.where(user_email: session[:user_email]).delete_all if session[:user_email]
-      session[:user_email] = nil
-      session[:responses] = nil
-    end
+    # Always clear session state when starting a new quiz
+    session[:user_email] = nil
     session[:responses] = nil
   end
 
@@ -21,7 +17,7 @@ class QuizController < ApplicationController
     if params[:email].present?
       session[:user_email] = params[:email]
       session[:responses] = []
-      # Clear old responses for this email
+      # Always clear old responses for this email when starting a new quiz
       UserResponse.where(user_email: params[:email]).delete_all
     elsif !session[:user_email] && request.referrer&.include?('quiz/question')
       # If user hit back and session was lost, redirect to start

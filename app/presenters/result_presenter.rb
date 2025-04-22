@@ -56,6 +56,7 @@ class ResultPresenter
       {
         name: dimension.name,
         normalized_scores: normalized_scores,  # Pass normalized scores to view
+        avg_normalized: avg_normalized,  # Pass pre-calculated average
         letter: letter,
         high_label: dimension.high_label,
         low_label: dimension.low_label
