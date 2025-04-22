@@ -1,9 +1,10 @@
 class ResultPresenter
-  attr_reader :user_email, :movie_type, :personality_description, :recommendations, :archetype_title
+  attr_reader :user_email, :movie_type, :personality_description, :recommendations, :archetype_title, :quote, :quote_attribution
 
   def initialize(user_email)
     @user_email = user_email
     calculate_results
+    set_random_quote
   end
 
   def calculate_results
@@ -121,5 +122,22 @@ class ResultPresenter
   def user_responses
     @user_responses ||= UserResponse.includes(quiz_question: :personality_dimension)
                                   .where(user_email: user_email)
+  end
+
+  def set_random_quote
+    quotes = [
+      { text: "Every great story needs a good ending.", attribution: "The Grand Budapest Hotel" },
+      { text: "Life is like a box of chocolates. You never know what you're gonna get.", attribution: "Forrest Gump" },
+      { text: "The past can hurt. But you can either run from it, or learn from it.", attribution: "The Lion King" },
+      { text: "It's not who I am underneath, but what I do that defines me.", attribution: "Batman Begins" },
+      { text: "Do, or do not. There is no try.", attribution: "The Empire Strikes Back" },
+      { text: "Oh yes, the past can hurt. But you can either run from it, or learn from it.", attribution: "The Lion King" },
+      { text: "The greatest teacher, failure is.", attribution: "The Last Jedi" },
+      { text: "Life moves pretty fast. If you don't stop and look around once in a while, you could miss it.", attribution: "Ferris Bueller's Day Off" }
+    ]
+    
+    selected_quote = quotes.sample
+    @quote = selected_quote[:text]
+    @quote_attribution = selected_quote[:attribution]
   end
 end
