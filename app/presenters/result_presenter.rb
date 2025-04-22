@@ -35,36 +35,24 @@ class ResultPresenter
   end
 
   def dimension_breakdowns
-    Rails.logger.info("Calculating dimension breakdowns...")
-    Rails.logger.info("User responses: #{user_responses.inspect}")
-    Rails.logger.info("Personality dimensions: #{PersonalityDimension.all.inspect}")
-
     PersonalityDimension.all.map do |dimension|
       dimension_responses = user_responses.select { |r| r.quiz_question.personality_dimension_id == dimension.id }
+      next nil if dimension_responses.empty?
       
-      # Calculate normalized scores for both letter and meter
       normalized_scores = dimension_responses.map { |r| r.quiz_question.normalize_response(r.response_value) }
       avg_normalized = normalized_scores.sum / normalized_scores.length
-      
-      Rails.logger.info("\nDimension: #{dimension.name}")
-      Rails.logger.info("Raw responses: #{dimension_responses.map(&:response_value)}")
-      Rails.logger.info("Normalized scores: #{normalized_scores}")
-      Rails.logger.info("Average normalized: #{avg_normalized}")
-      
       letter = dimension.letter_for_score(avg_normalized)
-      Rails.logger.info("Final letter: #{letter}")
       
       {
         name: dimension.name,
-        normalized_scores: normalized_scores,  # Pass normalized scores to view
-        avg_normalized: avg_normalized,  # Pass pre-calculated average
         letter: letter,
         high_label: dimension.high_label,
-        low_label: dimension.low_label
+        low_label: dimension.low_label,
+        leans_high: letter == dimension.high_label[0].upcase
       }
-    end
-  rescue StandardError => e
-    Rails.logger.error("Error calculating dimension breakdowns: #{e.message}\n#{e.backtrace.join("\n")}")
+    end.compact
+  rescue => e
+    Rails.logger.error("Error in dimension_breakdowns: #{e.message}")
     []
   end
 

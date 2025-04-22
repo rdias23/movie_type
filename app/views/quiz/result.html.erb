@@ -16,47 +16,18 @@
     </div>
 
     <!-- Dimension Breakdown -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+    <div class="max-w-2xl mx-auto mb-12 grid grid-cols-1 gap-3">
       <% @presenter.dimension_breakdowns.each do |dimension| %>
-        <div class="bg-white/5 rounded-lg p-6">
-          <h3 class="text-lg font-semibold mb-2"><%= dimension[:name] %></h3>
-          <div class="flex justify-between text-sm text-gray-400 mb-2">
-            <span><%= dimension[:high_label] %></span>
-            <span><%= dimension[:low_label] %></span>
+        <div class="bg-white/5 rounded-lg px-6 py-3">
+          <div class="flex items-center">
+            <span class="text-2xl font-mono font-bold w-7"><%= dimension[:letter] %></span>
+            <span class="text-gray-400 text-sm w-44"><%= dimension[:name] %></span>
+            <div class="flex items-center gap-2">
+              <span class="<%= dimension[:leans_high] ? 'text-white' : 'text-gray-500' %>"><%= dimension[:high_label] %></span>
+              <span class="text-gray-600 mx-1">/</span>
+              <span class="<%= dimension[:leans_high] ? 'text-gray-500' : 'text-white' %>"><%= dimension[:low_label] %></span>
+            </div>
           </div>
-          <div class="relative h-2 bg-white/10 rounded-full mb-2">
-            <!-- Center line -->
-            <div class="absolute top-0 left-1/2 w-px h-full bg-white/20"></div>
-            <!-- Score indicator -->
-            <% 
-              # Convert normalized scores to meter position
-              if dimension[:normalized_scores].empty?
-                width = 2  # Minimum visible width
-                left = 50 - width/2  # Center it
-              else
-                # Use pre-calculated average normalized score for position
-                avg_score = dimension[:avg_normalized]
-                # Convert -1.0 to 1.0 range to 0 to 100 position
-                # -1.0 (strong first) -> 0%
-                # 0.0 (neutral) -> 50%
-                # 1.0 (strong second) -> 100%
-                left = ((avg_score + 1) * 50).round
-                # Keep width small and centered on position
-                width = 2
-                left = left - width/2
-              end
-            %>
-            <div class="absolute top-0 h-full bg-white rounded-full transition-all duration-500"
-                 style="width: <%= width %>%; left: <%= left %>%"></div>
-          </div>
-          <div class="flex justify-between text-xs text-gray-500 mb-2">
-            <span>Strong</span>
-            <span>Mixed</span>
-            <span>Strong</span>
-          </div>
-          <p class="text-sm text-gray-400 text-center">
-            <%= dimension[:letter] %>
-          </p>
         </div>
       <% end %>
     </div>
