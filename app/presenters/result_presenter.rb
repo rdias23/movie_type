@@ -113,19 +113,28 @@ class ResultPresenter
   end
 
   def set_random_quote
-    quotes = [
-      { text: "Every great story needs a good ending.", attribution: "The Grand Budapest Hotel" },
-      { text: "Life is like a box of chocolates. You never know what you're gonna get.", attribution: "Forrest Gump" },
-      { text: "The past can hurt. But you can either run from it, or learn from it.", attribution: "The Lion King" },
-      { text: "It's not who I am underneath, but what I do that defines me.", attribution: "Batman Begins" },
-      { text: "Do, or do not. There is no try.", attribution: "The Empire Strikes Back" },
-      { text: "Oh yes, the past can hurt. But you can either run from it, or learn from it.", attribution: "The Lion King" },
-      { text: "The greatest teacher, failure is.", attribution: "The Last Jedi" },
-      { text: "Life moves pretty fast. If you don't stop and look around once in a while, you could miss it.", attribution: "Ferris Bueller's Day Off" }
-    ]
+    preferences = PersonalityDimension.all.map do |d|
+      label = d.letter_for_score(calculate_dimension_score(d)) == d.high_label[0].upcase ? d.high_label : d.low_label
+      "#{d.name}: #{label}"
+    end.join("\n")
+
+    begin
+      response = OpenaiService.new.generate_quote_for_type(movie_type, preferences)
+      result = JSON.parse(response)
+      @quote = result["quote"]
+      @quote_attribution = result["attribution"]
+    rescue => e
+      Rails.logger.error("Error generating quote: #{e.message}")
+      @quote = "Every story is unique, just like every viewer."
+      @quote_attribution = "Movie Type"
+    end
+  end
+
+  def calculate_dimension_score(dimension)
+    responses = user_responses.select { |r| r.quiz_question.personality_dimension_id == dimension.id }
+    return 0 if responses.empty?
     
-    selected_quote = quotes.sample
-    @quote = selected_quote[:text]
-    @quote_attribution = selected_quote[:attribution]
+    scores = responses.map { |r| r.quiz_question.normalize_response(r.response_value) }
+    scores.sum / scores.length
   end
 end

@@ -128,6 +128,44 @@ class OpenaiService
     end
   end
 
+  def generate_quote_for_type(movie_type, preferences)
+    system_prompt = <<~PROMPT
+      You are a film expert with deep knowledge of cinema. Generate a meaningful movie quote that reflects 
+      this person's movie-watching personality. The quote can be from a real or imagined film, but it should 
+      deeply resonate with their preferences.
+
+      Their preferences are:
+      #{preferences}
+
+      Return a JSON response in this exact format:
+      {
+        "quote": "The quote text here",
+        "attribution": "Character or Context, Movie Title"
+      }
+
+      The quote should feel authentic and meaningful, capturing the essence of their cinematic taste.
+    PROMPT
+
+    begin
+      response = @client.chat(
+        parameters: {
+          model: ENV.fetch("OPENAI_MODEL", "gpt-4"),
+          messages: [
+            { role: 'system', content: system_prompt },
+            { role: 'user', content: "Generate a quote for movie type: #{movie_type}" }
+          ],
+          temperature: 0.7,
+          response_format: { type: "json_object" }
+        }
+      )
+      response.dig('choices', 0, 'message', 'content')
+    rescue StandardError => e
+      puts "OpenAI error in generate_quote: #{e.message}"
+      fallback = { quote: "Every story is unique, just like every viewer.", attribution: "Movie Type" }
+      fallback.to_json
+    end
+  end
+
   def all_personality_types(force_refresh: false)
     self.class.all_personality_types(force_refresh: force_refresh)
   end
