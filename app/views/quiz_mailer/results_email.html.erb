@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+      h1 { color: #1a1a1a; font-size: 24px; margin-bottom: 20px; }
+      h2 { color: #1a1a1a; font-size: 20px; margin-top: 30px; margin-bottom: 15px; }
+      .quote { font-style: italic; color: #666; margin: 20px 0; padding: 15px; border-left: 3px solid #ddd; }
+      .attribution { font-size: 14px; color: #888; }
+      .dimension { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 5px; }
+      .recommendations { margin-top: 20px; }
+      .recommendations li { margin-bottom: 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>Your Movie Type: <%= @movie_type %></h1>
+
+    <div class="quote">
+      "<%= @quote %>"
+      <div class="attribution">— <%= @quote_attribution %></div>
+    </div>
+
+    <h2>Your Cinematic Personality</h2>
+    <p><%= @personality_description %></p>
+
+    <h2>Your Dimensions</h2>
+    <% @dimension_breakdowns.each do |dimension| %>
+      <div class="dimension">
+        <strong><%= dimension[:letter] %></strong> - <%= dimension[:name] %>
+        <div>
+          <%= dimension[:leans_high] ? dimension[:high_label] : dimension[:low_label] %>
+        </div>
+      </div>
+    <% end %>
+
+    <h2>Recommended Films & Directors</h2>
+    <ul class="recommendations">
+      <% @recommendations[:films].each do |film| %>
+        <li><%= film %></li>
+      <% end %>
+    </ul>
+
+    <p>Directors to explore:</p>
+    <ul class="recommendations">
+      <% @recommendations[:directors].each do |director| %>
+        <li><%= director %></li>
+      <% end %>
+    </ul>
+
+    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+    <p style="color: #888; font-size: 14px;">
+      Thanks for taking the Movie Type quiz! We hope these insights help you discover more films you'll love.
+    </p>
+  </body>
+</html>

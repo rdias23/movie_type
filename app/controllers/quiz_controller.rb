@@ -105,22 +105,23 @@ class QuizController < ApplicationController
       return
     end
 
-    # Ensure all dimensions have responses
-    missing_dimensions = PersonalityDimension
-      .joins(:quiz_questions)
-      .where.not(id: UserResponse
-        .where(user_email: session[:user_email])
-        .joins(:quiz_question)
-        .select('quiz_questions.personality_dimension_id'))
-      .distinct
-
-    if missing_dimensions.any?
-      Rails.logger.error "Missing responses for dimensions: #{missing_dimensions.pluck(:name)}"
-      redirect_to quiz_start_path, alert: "Please complete all sections of the quiz"
-      return
-    end
-
     @presenter = ResultPresenter.new(session[:user_email])
+    
+    # Send the results email with just the data, not the presenter object
+    email_data = {
+      movie_type: @presenter.movie_type,
+      personality_description: @presenter.personality_description,
+      recommendations: @presenter.recommendations,
+      quote: @presenter.quote,
+      quote_attribution: @presenter.quote_attribution,
+      dimension_breakdowns: @presenter.dimension_breakdowns
+    }
+    
+    QuizMailer.results_email(session[:user_email], email_data).deliver_later
+
+    # Clear session after showing results
+    session[:user_email] = nil
+    session[:responses] = nil
   rescue StandardError => e
     Rails.logger.error("Error generating results: #{e.message}\n#{e.backtrace.join("\n")}")
     flash[:error] = "We encountered an error generating your results. Please try again."

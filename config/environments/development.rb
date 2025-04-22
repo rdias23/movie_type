@@ -34,7 +34,15 @@ Rails.application.configure do
   # caching is enabled.
   config.action_mailer.perform_caching = false
 
-  config.action_mailer.default_url_options = { host: "localhost", port: 3000 }
+  # Enable letter_opener for email preview
+  config.action_mailer.delivery_method = :letter_opener
+  config.action_mailer.perform_deliveries = true
+  
+  # Set host for URL generation in emails
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch('APP_HOST', 'localhost'),
+    port: ENV.fetch('PORT', 3000)
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
