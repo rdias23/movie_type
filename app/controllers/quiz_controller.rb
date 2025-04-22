@@ -62,7 +62,34 @@ class QuizController < ApplicationController
       value: params[:value]
     }
 
-    next_question = QuizQuestion.where("id > ?", params[:question_id]).first
+    # Get the next question, ensuring we get questions from all dimensions
+    answered_questions = UserResponse.where(user_email: session[:user_email]).pluck(:quiz_question_id)
+    current_question = QuizQuestion.find(params[:question_id])
+    
+    # First try to get another question from the same dimension
+    next_question = QuizQuestion
+      .where(personality_dimension_id: current_question.personality_dimension_id)
+      .where.not(id: answered_questions)
+      .order(:id)  # Important: Get questions in order within dimension
+      .first
+
+    # If no more questions in this dimension, move to the next dimension
+    unless next_question
+      next_dimension = PersonalityDimension
+        .joins(:quiz_questions)
+        .where.not(quiz_questions: { id: answered_questions })
+        .first
+
+      if next_dimension
+        # Get the first unanswered question from this dimension
+        next_question = QuizQuestion
+          .where(personality_dimension_id: next_dimension.id)
+          .where.not(id: answered_questions)
+          .order(:id)  # Important: Get questions in order within dimension
+          .first
+      end
+    end
+
     Rails.logger.info "Next question: #{next_question.inspect}"
 
     if next_question
@@ -79,6 +106,21 @@ class QuizController < ApplicationController
   def result
     unless session[:user_email]
       redirect_to quiz_start_path, alert: "Please enter your email to start the quiz"
+      return
+    end
+
+    # Ensure all dimensions have responses
+    missing_dimensions = PersonalityDimension
+      .joins(:quiz_questions)
+      .where.not(id: UserResponse
+        .where(user_email: session[:user_email])
+        .joins(:quiz_question)
+        .select('quiz_questions.personality_dimension_id'))
+      .distinct
+
+    if missing_dimensions.any?
+      Rails.logger.error "Missing responses for dimensions: #{missing_dimensions.pluck(:name)}"
+      redirect_to quiz_start_path, alert: "Please complete all sections of the quiz"
       return
     end
 

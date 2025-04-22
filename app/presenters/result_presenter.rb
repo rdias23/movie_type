@@ -14,9 +14,8 @@ class ResultPresenter
     # Fallback descriptions if OpenAI is not configured
     Rails.logger.info "OPENAI_API_KEY present?: #{ENV['OPENAI_API_KEY'].present?}"
     
-    if ENV['OPENAI_API_KEY'].present?
-      Rails.logger.info "Attempting to use OpenAI..."
-      begin
+    begin
+      if ENV['OPENAI_API_KEY'].present?
         openai = OpenaiService.new
         Rails.logger.info "OpenAI service initialized"
         
@@ -25,21 +24,13 @@ class ResultPresenter
         
         @recommendations = openai.generate_recommendations(@movie_type, user_responses)
         Rails.logger.info "Got recommendations: #{@recommendations.inspect}"
-      rescue StandardError => e
-        Rails.logger.error "Error using OpenAI: #{e.message}\n#{e.backtrace.join("\n")}"
-        Rails.logger.info "Falling back to default content..."
-        @personality_description = archetype[:description]
-        @recommendations = generate_fallback_recommendations
       end
-    else
-      Rails.logger.info "No OpenAI key, using fallback content"
-      @personality_description = archetype[:description]
+    rescue StandardError => e
+      Rails.logger.error "Error using OpenAI: #{e.message}\n#{e.backtrace.join("\n")}"
+      Rails.logger.info "Falling back to default content..."
+      @personality_description = generate_fallback_description
       @recommendations = generate_fallback_recommendations
     end
-  rescue StandardError => e
-    Rails.logger.error("Error in ResultPresenter: #{e.message}")
-    @personality_description = generate_fallback_description
-    @recommendations = generate_fallback_recommendations
   end
 
   def dimension_breakdowns
@@ -49,14 +40,23 @@ class ResultPresenter
 
     PersonalityDimension.all.map do |dimension|
       dimension_responses = user_responses.select { |r| r.quiz_question.personality_dimension_id == dimension.id }
-      avg_score = dimension_responses.empty? ? 3 : dimension_responses.sum(&:response_value).to_f / dimension_responses.length
       
-      Rails.logger.info("Dimension #{dimension.name}: #{dimension_responses.length} responses, avg_score: #{avg_score}")
+      # Calculate normalized scores for both letter and meter
+      normalized_scores = dimension_responses.map { |r| r.quiz_question.normalize_response(r.response_value) }
+      avg_normalized = normalized_scores.sum / normalized_scores.length
+      
+      Rails.logger.info("\nDimension: #{dimension.name}")
+      Rails.logger.info("Raw responses: #{dimension_responses.map(&:response_value)}")
+      Rails.logger.info("Normalized scores: #{normalized_scores}")
+      Rails.logger.info("Average normalized: #{avg_normalized}")
+      
+      letter = dimension.letter_for_score(avg_normalized)
+      Rails.logger.info("Final letter: #{letter}")
       
       {
         name: dimension.name,
-        score: avg_score,
-        letter: dimension.calculate_letter(dimension_responses),
+        normalized_scores: normalized_scores,  # Pass normalized scores to view
+        letter: letter,
         high_label: dimension.high_label,
         low_label: dimension.low_label
       }
@@ -95,15 +95,25 @@ class ResultPresenter
   def calculate_movie_type
     # Get all responses for this user
     responses = user_responses
-    return "????" if responses.empty?
-
+    
     # Group responses by dimension and calculate letters
     type_letters = PersonalityDimension.all.map do |dimension|
       dimension_responses = responses.select { |r| r.quiz_question.personality_dimension_id == dimension.id }
-      dimension.calculate_letter(dimension_responses) || "?"
+      
+      # Calculate normalized scores
+      normalized_scores = dimension_responses.map { |r| r.quiz_question.normalize_response(r.response_value) }
+      avg_normalized = normalized_scores.sum / normalized_scores.length
+      
+      Rails.logger.info("\nCalculating letter for dimension #{dimension.name}:")
+      Rails.logger.info("  Raw responses: #{dimension_responses.map(&:response_value)}")
+      Rails.logger.info("  Normalized scores: #{normalized_scores}")
+      Rails.logger.info("  Average normalized: #{avg_normalized}")
+      
+      letter = dimension.letter_for_score(avg_normalized)
+      Rails.logger.info("  Letter: #{letter}")
+      letter
     end
 
-    # Combine letters into final type
     type_letters.join
   end
 
