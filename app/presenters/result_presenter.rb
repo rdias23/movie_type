@@ -90,18 +90,26 @@ class ResultPresenter
     type_letters = PersonalityDimension.all.map do |dimension|
       dimension_responses = responses.select { |r| r.quiz_question.personality_dimension_id == dimension.id }
       
-      # Calculate normalized scores
-      normalized_scores = dimension_responses.map { |r| r.quiz_question.normalize_response(r.response_value) }
-      avg_normalized = normalized_scores.sum / normalized_scores.length
-      
-      Rails.logger.info("\nCalculating letter for dimension #{dimension.name}:")
-      Rails.logger.info("  Raw responses: #{dimension_responses.map(&:response_value)}")
-      Rails.logger.info("  Normalized scores: #{normalized_scores}")
-      Rails.logger.info("  Average normalized: #{avg_normalized}")
-      
-      letter = dimension.letter_for_score(avg_normalized)
-      Rails.logger.info("  Letter: #{letter}")
-      letter
+      # If no responses for this dimension, use a neutral score (0)
+      if dimension_responses.empty?
+        Rails.logger.info("\nNo responses for dimension #{dimension.name}, using neutral score")
+        letter = dimension.letter_for_score(0)
+        Rails.logger.info("  Letter: #{letter}")
+        letter
+      else
+        # Calculate normalized scores
+        normalized_scores = dimension_responses.map { |r| r.quiz_question.normalize_response(r.response_value) }
+        avg_normalized = normalized_scores.sum / normalized_scores.length
+        
+        Rails.logger.info("\nCalculating letter for dimension #{dimension.name}:")
+        Rails.logger.info("  Raw responses: #{dimension_responses.map(&:response_value)}")
+        Rails.logger.info("  Normalized scores: #{normalized_scores}")
+        Rails.logger.info("  Average normalized: #{avg_normalized}")
+        
+        letter = dimension.letter_for_score(avg_normalized)
+        Rails.logger.info("  Letter: #{letter}")
+        letter
+      end
     end
 
     type_letters.join

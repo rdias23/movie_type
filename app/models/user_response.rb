@@ -20,16 +20,16 @@ class UserResponse < ApplicationRecord
       .select('personality_dimensions.*, AVG(user_responses.response_value - 3) as avg_score')
       .order('personality_dimensions.id')
 
-    # Convert scores to letters
+    # Convert scores to letters using PersonalityDimension's score_to_letter method
     dimension_scores.map do |result|
-      result.letter_for_score(result.avg_score)
+      PersonalityDimension.score_to_letter(result.avg_score, result.high_label, result.low_label)
     end.join
   end
 
   # Safe method to view user email for debugging
   def self.debug_responses_for_email(email)
     Rails.logger.info "DEBUGGING: Viewing responses for #{email}"
-    where(user_email: email).includes(:quiz_question).map do |response|
+    where(user_email: email).includes(:quiz_question).order(:created_at).map do |response|
       {
         email: response.user_email,
         question_id: response.quiz_question_id,
